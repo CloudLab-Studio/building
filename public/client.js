@@ -2,25 +2,31 @@ import * as THREE from 'three'
 import { OrbitControls } from './jsm/controls/OrbitControls.js'
 import Stats from './jsm/libs/stats.module.js'
 import { GUI } from './jsm/libs/lil-gui.module.min.js'
+import { addLight, syncSun, getSunPosition } from './light.mjs'
+import { getMaterial } from './materials.mjs'
+import { addCubes, Cube } from './cubes.mjs'
+import { addGround } from './ground.js'
 
 const scene = new THREE.Scene()
 
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100)
-camera.position.z = 2
+addLight(scene)
+addCubes(scene)
+addGround(scene)
 
-const renderer = new THREE.WebGLRenderer()
-renderer.setSize(window.innerWidth, window.innerHeight)
-document.body.appendChild(renderer.domElement)
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.z = 30;
+camera.position.x = 0;
+camera.position.y = 10;
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setClearColor(0xffffff);
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.appendChild(renderer.domElement);
 
 const controls = new OrbitControls(camera, renderer.domElement)
 
-const geometry = new THREE.BoxGeometry()
-const material = new THREE.MeshBasicMaterial({
-    color: 0x00ff00,
-    wireframe: true,
-})
-const cube = new THREE.Mesh(geometry, material)
-scene.add(cube)
 
 window.addEventListener(
     'resize',
@@ -33,23 +39,91 @@ window.addEventListener(
     false
 )
 
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+var oldCube = null;
+var newCube = null;
+
+function onMouseMove(event) {
+    // Calculate mouse position in normalized device coordinates (-1 to +1)
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+    // Update the picking ray with the camera and mouse position
+    raycaster.setFromCamera(mouse, camera);
+
+    // Calculate objects intersecting the picking ray
+    const intersects = raycaster.intersectObjects(scene.children);
+
+    for (let i = 0; i < intersects.length; i++) {
+        // If we've clicked on a cube (assuming the cubes are the only meshes in the scene)
+        if (intersects[i].object instanceof Cube) {
+            newCube = intersects[i].object;
+            if (oldCube == null)
+                oldCube = newCube;
+            
+            newCube.bump(1); // Set the color of the intersected object to red
+            if (oldCube != newCube && oldCube != null) {    
+                oldCube.bump(0);
+                oldCube = newCube;
+            }
+
+            return; // Uncomment this line if you want only the first object to be affected
+        }
+    }
+
+    if (oldCube != null) {    
+        oldCube.bump(0);
+        oldCube = null;
+    }
+}
+
+
+
+function onMouseClick(event) {
+    // Calculate mouse position in normalized device coordinates (-1 to +1)
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+    // Update the picking ray with the camera and mouse position
+    raycaster.setFromCamera(mouse, camera);
+
+    // Calculate objects intersecting the picking ray
+    const intersects = raycaster.intersectObjects(scene.children);
+
+    for (let i = 0; i < intersects.length; i++) {
+        // If we've clicked on a cube (assuming the cubes are the only meshes in the scene)
+        if (intersects[i].object instanceof Cube) {
+            intersects[i].object.toggle(); // Set the color of the intersected object to red
+            break; // Uncomment this line if you want only the first object to be affected
+        }
+    }
+}
+
+// Add event listener to the window for mouse clicks
+window.addEventListener('click', onMouseClick, false);
+window.addEventListener('mousemove', onMouseMove, false);
+
 const stats = Stats()
 document.body.appendChild(stats.dom)
 
 const gui = new GUI()
-const cubeFolder = gui.addFolder('Cube')
-cubeFolder.add(cube.scale, 'x', -5, 5)
-cubeFolder.add(cube.scale, 'y', -5, 5)
-cubeFolder.add(cube.scale, 'z', -5, 5)
-cubeFolder.open()
+const lightFolder = gui.addFolder('Light')
+var sunPosition = getSunPosition()
+lightFolder.add(sunPosition, 'x', -100, 100)
+lightFolder.add(sunPosition, 'y', -100, 100)
+lightFolder.add(sunPosition, 'z', -100, 100)
+lightFolder.open()
 const cameraFolder = gui.addFolder('Camera')
 cameraFolder.add(camera.position, 'z', 0, 10)
 cameraFolder.open()
 
 function animate() {
     requestAnimationFrame(animate)
-    cube.rotation.x += 0.01
-    cube.rotation.y += 0.01
+    //cube.rotation.x += 0.01
+    //cube.rotation.y += 0.01
+    syncSun()
     controls.update()
     render()
     stats.update()
