@@ -1,7 +1,61 @@
 
 import * as THREE from 'three'
-import { getMaterial } from './materials.mjs'
+import { addMaterials, getMaterial } from './materials.mjs'
 import { BaseMesh } from './baseMesh.js'
+
+
+addMaterials({
+    "availableMark": new THREE.MeshPhysicalMaterial({
+        color: 0x0000ff, // Mark color
+        transparent: true, // Enable transparency
+        opacity: 0.5, // Semi-transparent
+        specular: 0x050505,
+        shininess: 100,
+        metalness: 0.3,
+        roughness: 0.1,
+        //envMap: environmentMap,
+        reflectivity: 1
+    }),
+
+    "busyMark": new THREE.MeshPhysicalMaterial({
+        color: 0xff00ff, // Mark color
+        transparent: true, // Enable transparency
+        opacity: 0.6, // Semi-transparent
+        specular: 0xFF00ff,
+        shininess: 10,
+        emissive: 0xff00ff, // Neon color
+        emissiveIntensity: 1
+    }),
+    "availableMark:hover":
+        new THREE.MeshPhysicalMaterial({
+            color: 0x0000ff, // Mark color
+            transparent: true, // Enable transparency
+            opacity: 1, // Semi-transparent
+            specular: 0x050505,
+            shininess: 100,
+            metalness: 0.3,
+            roughness: 0.1,
+            //envMap: environmentMap,
+            reflectivity: 1
+        }),
+
+    'busyMark:hover':
+        new THREE.MeshPhysicalMaterial({
+            color: 0xff00ff, // Mark color
+            transparent: true, // Enable transparency
+            opacity: 1, // Semi-transparent
+            specular: 0xFF0000,
+            shininess: 100,
+            emissive: 0xff0000, // Neon color
+            emissiveIntensity: 1
+        }),
+    'edgeMark':
+        new THREE.LineBasicMaterial({
+            color: 0x000000, transparent: true, // Enable transparency
+            opacity: 0.5 // Semi-transparent
+        })
+
+})
 
 export class Mark extends BaseMesh {
     constructor(x, y, z, size) {
@@ -16,7 +70,7 @@ export class Mark extends BaseMesh {
         this.add(edges);
     }
 
-    click() {
+    onclick() {
         if (this.available) {
             this.material = getMaterial('busyMark');
             this.available = false;
@@ -24,22 +78,7 @@ export class Mark extends BaseMesh {
             this.material = getMaterial('availableMark');
             this.available = true;
         }
-    }
-
-    moveIn() {
-        if (this.available)
-            this.material = getMaterial('availableMarkHover');
-        else
-            this.material = getMaterial('busyMarkHover');
-
-    }
-
-    moveOut() {
-        if (this.available)
-            this.material = getMaterial('availableMark');
-        else
-            this.material = getMaterial('busyMark');
-    }
+    }    
 }
 
 function createLayer(scene, y, numOfmarks, numOfmarks2) {

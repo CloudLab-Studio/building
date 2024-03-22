@@ -61,10 +61,10 @@ function onMouseMove(event) {
     for (let i = 0; i < intersects.length; i++) {
         if (oldObject != intersects[i].object) {
             if (intersects[i].object instanceof BaseMesh)
-                intersects[i].object.moveIn();
+                intersects[i].object.onmouseIn();
 
             if (oldObject instanceof BaseMesh)
-                oldObject.moveOut();
+                oldObject.onmouseOut();
         }
 
         oldObject = intersects[i].object;
@@ -90,7 +90,7 @@ function onMouseClick(event) {
     for (let i = 0; i < intersects.length; i++) {
         // If we've clicked on a cube (assuming the cubes are the only meshes in the scene)
         if (intersects[i].object instanceof BaseMesh) {
-            intersects[i].object.click(); // Set the color of the intersected object to red
+            intersects[i].object.onclick(); // Set the color of the intersected object to red
             break; // Uncomment this line if you want only the first object to be affected
         }
     }

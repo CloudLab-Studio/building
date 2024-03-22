@@ -1,28 +1,32 @@
 import * as THREE from 'three'
+import { getMaterial } from './materials.mjs'
 
 export class BaseMesh extends THREE.Mesh {
-    constructor(geometry, material, hoverMaterial = null) {
+    constructor(geometry, material) {
         super(geometry, material);
 
         this.castShadow = true;      // This object will cast shadows
-        this.receiveShadow = true;  // This object will receive shadows  
-        this.normalMaterial = material;
-        if (hoverMaterial) {
-            this.hoverMaterial = hoverMaterial;
-        }else{
-            this.hoverMaterial = material;
-        }
+        this.receiveShadow = true;  // This object will receive shadows
+        this.hovered = false;  
     }
 
-    click(){
+    get hoveredPostfix(){
+        return this.hovered ? ':hover' : '';
+    }
+
+    onclick(){
         console.log('click');
     }
 
-    moveIn(){
-        console.log('moveIn');
+    onmouseIn(){
+        if (!this.material.name.includes(':hover'))
+            this.material = getMaterial(this.material.name + ':hover');
+        this.hovered = true;
     }
 
-    moveOut(){
-        console.log('moveOut');
+    onmouseOut(){
+        if (this.material.name.includes(':hover'))
+            this.material = getMaterial(this.material.name.replace(':hover', ''));
+        this.hovered = false;
     }
 }
