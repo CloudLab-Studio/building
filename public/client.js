@@ -31,7 +31,13 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
 
 const controls = new OrbitControls(camera, renderer.domElement)
-
+controls.minPolarAngle = Math.PI / 6;
+controls.maxPolarAngle = Math.PI / 2;
+controls.enableDamping = true; // Animate movement (inertia)
+controls.dampingFactor = 0.05; // Damping inertia
+controls.minDistance = 15; // How close the camera can zoom in
+controls.maxDistance = 25; // How far the camera can zoom out
+controls.enablePan = false;
 
 window.addEventListener(
     'resize',
