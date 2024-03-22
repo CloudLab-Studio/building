@@ -104,7 +104,7 @@ export class Cube extends BaseMesh {
         this.material = value? getMaterial('selectedCube'):getMaterial('availableCube');
     }
 
-    onclick() {
+    onclick(scene) {
         this.selected = !this.selected;
     }
 }

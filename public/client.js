@@ -10,6 +10,8 @@ import { addMarks, Mark } from './marks.mjs'
 import { BaseMesh } from './baseMesh.js'
 
 const scene = new THREE.Scene()
+//var env = process.env.NODE_ENV || 'development';
+
 
 addLight(scene)
 addCubes(scene)
@@ -61,16 +63,16 @@ function onMouseMove(event) {
     for (let i = 0; i < intersects.length; i++) {
         if (oldObject != intersects[i].object) {
             if (intersects[i].object instanceof BaseMesh)
-                intersects[i].object.onmouseIn();
+                intersects[i].object.onmouseIn(scene);
 
             if (oldObject instanceof BaseMesh)
-                oldObject.onmouseOut();
+                oldObject.onmouseOut(scene);
         }
 
         oldObject = intersects[i].object;
         if (intersects[i].object instanceof BaseMesh)
             break;
-        
+
     }
 }
 
@@ -88,31 +90,36 @@ function onMouseClick(event) {
     const intersects = raycaster.intersectObjects(scene.children);
 
     for (let i = 0; i < intersects.length; i++) {
+        if (intersects[i].object instanceof BaseMesh && !intersects[i].object.visible)
+            continue
+
         // If we've clicked on a cube (assuming the cubes are the only meshes in the scene)
         if (intersects[i].object instanceof BaseMesh) {
-            intersects[i].object.onclick(); // Set the color of the intersected object to red
+            intersects[i].object.onclick(scene); // Set the color of the intersected object to red
             break; // Uncomment this line if you want only the first object to be affected
         }
     }
 }
 
 // Add event listener to the window for mouse clicks
-window.addEventListener('click', onMouseClick, false);
+//window.addEventListener('click', onMouseClick, false);
 window.addEventListener('mousemove', onMouseMove, false);
+window.addEventListener('pointerdown', onMouseClick, false);
 
-const stats = Stats()
-document.body.appendChild(stats.dom)
 
-const gui = new GUI()
-const lightFolder = gui.addFolder('Light')
-var sunPosition = getSunPosition()
-lightFolder.add(sunPosition, 'x', -100, 100)
-lightFolder.add(sunPosition, 'y', -100, 100)
-lightFolder.add(sunPosition, 'z', -100, 100)
-lightFolder.open()
-const cameraFolder = gui.addFolder('Camera')
-cameraFolder.add(camera.position, 'z', 0, 10)
-cameraFolder.open()
+// const stats = Stats()
+// document.body.appendChild(stats.dom)
+
+// const gui = new GUI()
+// const lightFolder = gui.addFolder('Light')
+// var sunPosition = getSunPosition()
+// lightFolder.add(sunPosition, 'x', -100, 100)
+// lightFolder.add(sunPosition, 'y', -100, 100)
+// lightFolder.add(sunPosition, 'z', -100, 100)
+// lightFolder.open()
+// const cameraFolder = gui.addFolder('Camera')
+// cameraFolder.add(camera.position, 'z', 0, 10)
+// cameraFolder.open()
 
 function animate() {
     requestAnimationFrame(animate)
@@ -120,7 +127,8 @@ function animate() {
     syncSun()
     controls.update()
     render()
-    stats.update()
+    // if (env === 'development')
+    //     stats.update()
 }
 
 function render() {

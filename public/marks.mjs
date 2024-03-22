@@ -2,7 +2,11 @@
 import * as THREE from 'three'
 import { addMaterials, getMaterial } from './materials.mjs'
 import { BaseMesh } from './baseMesh.js'
+import { Cube } from './cubes.mjs'
 
+var sliceX = -1000;
+var sliceZ = -1000;
+var sliceY = -1000;
 
 addMaterials({
     "availableMark": new THREE.MeshPhysicalMaterial({
@@ -58,7 +62,7 @@ addMaterials({
 })
 
 export class Mark extends BaseMesh {
-    constructor(x, y, z, size) {
+    constructor(x, y, z, size, axis) {
         super(new THREE.BoxGeometry(size, size / 4, size), getMaterial('availableMark'));
         this.position.set(x, y, z);
         this.castShadow = true;      // This object will cast shadows
@@ -67,10 +71,11 @@ export class Mark extends BaseMesh {
 
         const edges = new THREE.LineSegments(edgeGeometry, getMaterial('edgeMark'));
         this.available = true;
+        this.axis = axis;
         this.add(edges);
     }
 
-    onclick() {
+    onclick(scene) {
         if (this.available) {
             this.material = getMaterial('busyMark');
             this.available = false;
@@ -78,17 +83,32 @@ export class Mark extends BaseMesh {
             this.material = getMaterial('availableMark');
             this.available = true;
         }
-    }    
+
+        if (this.axis == "x")
+            sliceX = this.position.x - 1
+        else if (this.axis == "y")
+            sliceZ = this.position.z - 1
+        else if (this.axis == "z")
+            sliceY = this.position.z - 1
+
+        for (let i = 0; i < scene.children.length; i++) {
+            if (scene.children[i] instanceof Cube) {
+                scene.children[i].visible = scene.children[i].position.z > sliceZ &&
+                    scene.children[i].position.x > sliceX &&
+                    scene.children[i].position.y > sliceY
+            }
+        }
+    }
 }
 
 function createLayer(scene, y, numOfmarks, numOfmarks2) {
     for (let i = 0; i < numOfmarks; i++) {
-        const mark = new Mark(i - numOfmarks / 2, y, - numOfmarks2 / 2 - 2, 0.9);
+        const mark = new Mark(i - numOfmarks / 2, y, - numOfmarks2 / 2 - 2, 0.9, "x");
         scene.add(mark);
     }
 
     for (let j = 0; j < numOfmarks2; j++) {
-        const mark = new Mark(- numOfmarks / 2 - 2, y, j - numOfmarks2 / 2, 0.9);
+        const mark = new Mark(- numOfmarks / 2 - 2, y, j - numOfmarks2 / 2, 0.9, "y");
         scene.add(mark);
     }
 }

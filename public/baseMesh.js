@@ -14,17 +14,17 @@ export class BaseMesh extends THREE.Mesh {
         return this.hovered ? ':hover' : '';
     }
 
-    onclick(){
+    onclick(scene){
         console.log('click');
     }
 
-    onmouseIn(){
+    onmouseIn(scene){
         if (!this.material.name.includes(':hover'))
             this.material = getMaterial(this.material.name + ':hover');
         this.hovered = true;
     }
 
-    onmouseOut(){
+    onmouseOut(scene){
         if (this.material.name.includes(':hover'))
             this.material = getMaterial(this.material.name.replace(':hover', ''));
         this.hovered = false;
