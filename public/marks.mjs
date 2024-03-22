@@ -22,12 +22,12 @@ addMaterials({
     }),
 
     "busyMark": new THREE.MeshPhysicalMaterial({
-        color: 0xff00ff, // Mark color
+        color: 0xdddddd, // Mark color
         transparent: true, // Enable transparency
         opacity: 0.6, // Semi-transparent
-        specular: 0xFF00ff,
+        specular: 0xdddddd,
         shininess: 10,
-        emissive: 0xff00ff, // Neon color
+        emissive: 0xdddddd, // Neon color
         emissiveIntensity: 1
     }),
     "availableMark:hover":
@@ -45,13 +45,15 @@ addMaterials({
 
     'busyMark:hover':
         new THREE.MeshPhysicalMaterial({
-            color: 0xff00ff, // Mark color
+            color: 0x0000ff, // Mark color
             transparent: true, // Enable transparency
             opacity: 1, // Semi-transparent
-            specular: 0xFF0000,
+            specular: 0x050505,
             shininess: 100,
-            emissive: 0xff0000, // Neon color
-            emissiveIntensity: 1
+            metalness: 0.3,
+            roughness: 0.1,
+            //envMap: environmentMap,
+            reflectivity: 1
         }),
     'edgeMark':
         new THREE.LineBasicMaterial({
@@ -76,14 +78,6 @@ export class Mark extends BaseMesh {
     }
 
     onclick(scene) {
-        if (this.available) {
-            this.material = getMaterial('busyMark');
-            this.available = false;
-        } else {
-            this.material = getMaterial('availableMark');
-            this.available = true;
-        }
-
         if (this.axis == "x")
             sliceX = this.position.x - 1
         else if (this.axis == "y")
@@ -91,7 +85,18 @@ export class Mark extends BaseMesh {
         else if (this.axis == "z")
             sliceY = this.position.z - 1
 
+
         for (let i = 0; i < scene.children.length; i++) {
+
+            if (scene.children[i] instanceof Mark) {
+                if (scene.children[i].axis == "y")
+                    scene.children[i].material = scene.children[i].position.z > sliceZ ? getMaterial('availableMark') : getMaterial('busyMark');
+
+                if (scene.children[i].axis == "x")
+                    scene.children[i].material = scene.children[i].position.x > sliceX ? getMaterial('availableMark') : getMaterial('busyMark');
+            }
+
+
             if (scene.children[i] instanceof Cube) {
                 scene.children[i].visible = scene.children[i].position.z > sliceZ &&
                     scene.children[i].position.x > sliceX &&
