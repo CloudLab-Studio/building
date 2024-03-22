@@ -19,8 +19,8 @@ addGround(scene)
 addMarks(scene)
 
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.z = 30;
-camera.position.x = 0;
+camera.position.z = -10;
+camera.position.x = -20;
 camera.position.y = 10;
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -36,7 +36,7 @@ controls.maxPolarAngle = Math.PI / 2;
 controls.enableDamping = true; // Animate movement (inertia)
 controls.dampingFactor = 0.05; // Damping inertia
 controls.minDistance = 15; // How close the camera can zoom in
-controls.maxDistance = 25; // How far the camera can zoom out
+controls.maxDistance = 35; // How far the camera can zoom out
 controls.enablePan = false;
 
 window.addEventListener(
