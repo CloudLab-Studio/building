@@ -6,12 +6,15 @@ import { addLight, syncSun, getSunPosition } from './light.mjs'
 import { getMaterial } from './materials.mjs'
 import { addCubes, Cube } from './cubes.mjs'
 import { addGround } from './ground.js'
+import { addMarks, Mark } from './marks.mjs'
+import { BaseMesh } from './baseMesh.js'
 
 const scene = new THREE.Scene()
 
 addLight(scene)
 addCubes(scene)
 addGround(scene)
+addMarks(scene)
 
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.z = 30;
@@ -42,8 +45,7 @@ window.addEventListener(
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 
-var oldCube = null;
-var newCube = null;
+var oldObject = null;
 
 function onMouseMove(event) {
     // Calculate mouse position in normalized device coordinates (-1 to +1)
@@ -57,25 +59,18 @@ function onMouseMove(event) {
     const intersects = raycaster.intersectObjects(scene.children);
 
     for (let i = 0; i < intersects.length; i++) {
-        // If we've clicked on a cube (assuming the cubes are the only meshes in the scene)
-        if (intersects[i].object instanceof Cube) {
-            newCube = intersects[i].object;
-            if (oldCube == null)
-                oldCube = newCube;
-            
-            newCube.bump(1); // Set the color of the intersected object to red
-            if (oldCube != newCube && oldCube != null) {    
-                oldCube.bump(0);
-                oldCube = newCube;
-            }
+        if (oldObject != intersects[i].object) {
+            if (intersects[i].object instanceof BaseMesh)
+                intersects[i].object.moveIn();
 
-            return; // Uncomment this line if you want only the first object to be affected
+            if (oldObject instanceof BaseMesh)
+                oldObject.moveOut();
         }
-    }
 
-    if (oldCube != null) {    
-        oldCube.bump(0);
-        oldCube = null;
+        oldObject = intersects[i].object;
+        if (intersects[i].object instanceof BaseMesh)
+            break;
+        
     }
 }
 
@@ -94,8 +89,8 @@ function onMouseClick(event) {
 
     for (let i = 0; i < intersects.length; i++) {
         // If we've clicked on a cube (assuming the cubes are the only meshes in the scene)
-        if (intersects[i].object instanceof Cube) {
-            intersects[i].object.toggle(); // Set the color of the intersected object to red
+        if (intersects[i].object instanceof BaseMesh) {
+            intersects[i].object.click(); // Set the color of the intersected object to red
             break; // Uncomment this line if you want only the first object to be affected
         }
     }
@@ -122,7 +117,6 @@ cameraFolder.open()
 function animate() {
     requestAnimationFrame(animate)
     //cube.rotation.x += 0.01
-    //cube.rotation.y += 0.01
     syncSun()
     controls.update()
     render()

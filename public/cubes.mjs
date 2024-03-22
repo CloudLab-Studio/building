@@ -1,8 +1,9 @@
 
 import * as THREE from 'three'
 import { getMaterial } from './materials.mjs'
+import { BaseMesh } from './baseMesh.js'
 
-export class Cube extends THREE.Mesh {
+export class Cube extends BaseMesh {
     constructor(x, y, z, size) {
         super(new THREE.BoxGeometry(size, size, size), getMaterial('availableCube'));
         this.position.set(x, y, z);
@@ -13,9 +14,10 @@ export class Cube extends THREE.Mesh {
         const edges = new THREE.LineSegments(edgeGeometry, getMaterial('edgeCube'));
         this.available = true;
         this.add(edges);
+        this.bumpTick = 0;
     }
 
-    toggle() {
+    click() {
         if (this.available) {
             this.material = getMaterial('busyCube');
             this.available = false;
@@ -25,18 +27,32 @@ export class Cube extends THREE.Mesh {
         }
     }
 
-    bump(state) {
-        console.log(state);
-        if (state == 1) {
-            if (this.available)
-                this.material = getMaterial('availableCubeHover');
-            else
-                this.material = getMaterial('busyCubeHover');
-        } else
-            if (this.available)
-                this.material = getMaterial('availableCube');
-            else
-                this.material = getMaterial('busyCube');
+    moveIn() {
+        if (this.available)
+            this.material = getMaterial('availableCubeHover');
+        else
+            this.material = getMaterial('busyCubeHover');
+
+    }
+
+    moveOut() {
+        if (this.available)
+            this.material = getMaterial('availableCube');
+        else
+            this.material = getMaterial('busyCube');
+    }
+
+    onBeforeRender() {
+        // console.log(this.bumpTick);
+        // if (this.bumpTick > 0) {
+        //     this.bumpTick -= 10;
+        //     console.log(this.bumpTick);
+        // } else
+        //     this.bumpTick = 0;
+        // if (this.available)
+        //     this.material = getMaterial('availableCube', this.bumpTick);
+        // else
+        //     this.material = getMaterial('busyCube', this.bumpTick);
     }
 }
 
@@ -49,10 +65,7 @@ function createLayer(scene, y, numOfCubes, numOfCubes2) {
     }
 }
 
-export function addCubes(scene) {
-    const layers = 8;
-    const cubesPerLayer = 10;
-    const cubesPerLayer2 = 20;
+export function addCubes(scene, layers = 8, cubesPerLayer = 10, cubesPerLayer2 = 20) {
     for (let i = 0; i < layers; i++) {
         createLayer(scene, i, cubesPerLayer, cubesPerLayer2);
     }
